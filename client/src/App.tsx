@@ -2,11 +2,16 @@ import { useCallback, useEffect, useState } from 'react';
 import ConfirmDeleteDialog from './ConfirmDeleteDialog';
 import CreateDocumentForm from './CreateDocumentForm';
 import DocumentList from './DocumentList';
-import { bulkDeleteDocuments, createDocument, fetchDocuments } from './api';
+import { ApiError, bulkDeleteDocuments, createDocument, fetchDocuments } from './api';
 import { listTitles, lockedLabel, plural } from './format';
 import type { BulkDeleteResult, Doc } from './types';
 
 const GENERIC_ERROR = 'Something went wrong. Please try again.';
+
+/** The server's explanation for a rejected request, or the generic message for anything else. */
+function errorMessage(err: unknown) {
+  return err instanceof ApiError && err.userMessage ? err.userMessage : GENERIC_ERROR;
+}
 
 interface Notice {
   kind: 'success' | 'warning';
@@ -64,15 +69,18 @@ export default function App() {
     load();
   }, [load]);
 
-  const handleCreate = async (title: string) => {
+  const handleCreate = async (title: string): Promise<boolean> => {
     setError(null);
     setNotice(null);
     try {
       await createDocument(title);
-      await load();
-    } catch {
-      setError(GENERIC_ERROR);
+    } catch (err) {
+      setError(errorMessage(err));
+      return false;
     }
+    // load() reports its own errors; the document was created either way.
+    await load();
+    return true;
   };
 
   // Step 1: the Delete button opens the confirm dialog (or explains why there is nothing to delete).
@@ -107,9 +115,9 @@ export default function App() {
       const result = await bulkDeleteDocuments(selectedIds);
       setNotice(summarizeResult(result, titleOf));
       setSelectedIds(result.failed.flatMap((failure) => (failure.reason === 'locked' ? [failure.id] : [])));
-    } catch {
-      // The outcome is unknown, so keep the selection and let the reload show what is left.
-      setError(GENERIC_ERROR);
+    } catch (err) {
+      // Keep the selection and let the reload show what is left.
+      setError(errorMessage(err));
     } finally {
       setDeleting(false);
       await load();
