@@ -73,6 +73,18 @@ button.danger:not(:disabled) {
   color: #8c1c22;
 }
 
+.status.warning {
+  border-color: #f1d3a6;
+  background: #fdf8ef;
+  color: #6b4a0f;
+}
+
+.status.success {
+  border-color: #b9dfc4;
+  background: #f1faf4;
+  color: #1d5b2f;
+}
+
 table.documents {
   width: 100%;
   border-collapse: collapse;
