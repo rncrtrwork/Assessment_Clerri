@@ -1,7 +1,11 @@
-import { BadRequestException, Body, Controller, Get, HttpCode, Post } from '@nestjs/common';
+import { Body, Controller, Get, HttpCode, Post } from '@nestjs/common';
 import { BulkDeleteResult } from './document.model';
 import { DocumentsService } from './documents.service';
+import { BulkDeleteDto } from './dto/bulk-delete.dto';
+import { CreateDocumentDto } from './dto/create-document.dto';
 
+// Request bodies are validated by the global ValidationPipe (see validation.ts) against these DTOs,
+// so the handlers only ever see well-formed input.
 @Controller('documents')
 export class DocumentsController {
   constructor(private readonly documentsService: DocumentsService) {}
@@ -12,7 +16,7 @@ export class DocumentsController {
   }
 
   @Post()
-  async create(@Body() dto: { title: string }) {
+  async create(@Body() dto: CreateDocumentDto) {
     return this.documentsService.create(dto.title);
   }
 
@@ -20,13 +24,7 @@ export class DocumentsController {
   // the request itself succeeded, and the body says exactly what happened to each ID.
   @Post('bulk-delete')
   @HttpCode(200)
-  async bulkDelete(@Body() dto: { ids?: unknown }): Promise<BulkDeleteResult> {
-    const ids = dto?.ids;
-
-    if (!Array.isArray(ids) || !ids.every((id) => typeof id === 'string')) {
-      throw new BadRequestException('`ids` must be an array of strings');
-    }
-
-    return this.documentsService.bulkDelete(ids);
+  async bulkDelete(@Body() dto: BulkDeleteDto): Promise<BulkDeleteResult> {
+    return this.documentsService.bulkDelete(dto.ids);
   }
 }

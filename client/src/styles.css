@@ -60,6 +60,13 @@ button.danger:not(:disabled) {
   border-radius: 6px;
 }
 
+.char-count {
+  margin: -10px 0 16px;
+  padding-right: 84px;
+  text-align: right;
+  font-size: 12px;
+}
+
 .status {
   padding: 10px 12px;
   border-radius: 6px;
