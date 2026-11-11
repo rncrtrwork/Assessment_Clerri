@@ -32,34 +32,46 @@ export default function DocumentList({ documents, selectedIds, onSelectionChange
   };
 
   return (
-    <table className="documents">
-      <thead>
-        <tr>
-          <th className="checkbox-cell">
-            <input type="checkbox" checked={allSelected} onChange={toggleAll} />
-          </th>
-          <th>Title</th>
-          <th>Last updated</th>
-          <th>Status</th>
-        </tr>
-      </thead>
-      <tbody>
-        {documents.map((doc) => (
-          <tr key={doc.id} className={selectedIds.includes(doc.id) ? 'selected' : undefined}>
-            <td className="checkbox-cell">
-              <input
-                type="checkbox"
-                aria-label={`Select ${doc.title}`}
-                checked={selectedIds.includes(doc.id)}
-                onChange={() => toggleOne(doc.id)}
-              />
-            </td>
-            <td>{doc.title}</td>
-            <td className="muted">{formatDate(doc.updatedAt)}</td>
-            <td>{isLocked(doc) ? <span className="lock">Locked by {doc.lockedBy}</span> : <span className="muted">—</span>}</td>
+    // On narrow screens the table scrolls inside this wrapper instead of squeezing the title column.
+    <div className="table-scroll">
+      <table className="documents">
+        {/* Fixed column widths (see table-layout in styles.css); the title column takes the rest. */}
+        <colgroup>
+          <col style={{ width: 60 }} />
+          <col />
+          <col style={{ width: 130 }} />
+          <col style={{ width: 190 }} />
+        </colgroup>
+        <thead>
+          <tr>
+            <th className="checkbox-cell">
+              <input type="checkbox" checked={allSelected} onChange={toggleAll} />
+            </th>
+            <th>Title</th>
+            <th>Last updated</th>
+            <th>Status</th>
           </tr>
-        ))}
-      </tbody>
-    </table>
+        </thead>
+        <tbody>
+          {documents.map((doc) => (
+            <tr key={doc.id} className={selectedIds.includes(doc.id) ? 'selected' : undefined}>
+              <td className="checkbox-cell">
+                <input
+                  type="checkbox"
+                  aria-label={`Select ${doc.title}`}
+                  checked={selectedIds.includes(doc.id)}
+                  onChange={() => toggleOne(doc.id)}
+                />
+              </td>
+              <td className="title-cell" title={doc.title}>
+                {doc.title}
+              </td>
+              <td className="muted date-cell">{formatDate(doc.updatedAt)}</td>
+              <td>{isLocked(doc) ? <span className="lock">Locked by {doc.lockedBy}</span> : <span className="muted">—</span>}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
   );
 }
