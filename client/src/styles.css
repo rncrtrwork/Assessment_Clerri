@@ -73,6 +73,53 @@ button.danger:not(:disabled) {
   color: #8c1c22;
 }
 
+.confirm-dialog {
+  width: min(440px, calc(100vw - 32px));
+  padding: 0;
+  border: none;
+  border-radius: 10px;
+  color: #1c1f23;
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.2);
+}
+
+.confirm-dialog::backdrop {
+  background: rgba(20, 24, 30, 0.35);
+}
+
+.confirm-dialog-body {
+  padding: 20px 22px;
+  font-size: 14px;
+}
+
+.confirm-dialog h2 {
+  font-size: 16px;
+  margin: 0 0 10px;
+}
+
+.confirm-dialog-list {
+  margin: 0 0 12px;
+  padding-left: 18px;
+}
+
+.confirm-dialog-warning {
+  padding: 8px 10px;
+  margin-bottom: 10px;
+  border: 1px solid #f1d3a6;
+  border-radius: 6px;
+  background: #fdf8ef;
+  color: #6b4a0f;
+}
+
+.confirm-dialog p {
+  margin: 0 0 16px;
+}
+
+.confirm-dialog-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
 .status.warning {
   border-color: #f1d3a6;
   background: #fdf8ef;
