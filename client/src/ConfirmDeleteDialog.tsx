@@ -1,5 +1,5 @@
 import { useLayoutEffect, useRef } from 'react';
-import { plural } from './format';
+import { plural, shortTitle } from './format';
 import type { Doc } from './types';
 
 const MAX_TITLES = 5;
@@ -62,7 +62,10 @@ export default function ConfirmDeleteDialog({ open, deletable, locked, onConfirm
         <div id="confirm-delete-description">
           <ul className="confirm-dialog-list">
             {shownTitles.map((doc) => (
-              <li key={doc.id}>{doc.title}</li>
+              // One line each, ending in "…" (see styles.css); hover shows the full title.
+              <li key={doc.id} title={doc.title}>
+                {doc.title}
+              </li>
             ))}
             {hiddenCount > 0 && <li className="muted">and {hiddenCount} more</li>}
           </ul>
@@ -73,7 +76,7 @@ export default function ConfirmDeleteDialog({ open, deletable, locked, onConfirm
               {locked.slice(0, MAX_TITLES).map((doc, index) => (
                 <span key={doc.id}>
                   {index > 0 && ', '}
-                  <strong>{doc.title}</strong> (locked by {doc.lockedBy})
+                  <strong title={doc.title}>{shortTitle(doc.title)}</strong> (locked by {doc.lockedBy})
                 </span>
               ))}
               {locked.length > MAX_TITLES && ` and ${locked.length - MAX_TITLES} more`}

@@ -55,9 +55,36 @@ button.danger:not(:disabled) {
 .create-form input {
   font: inherit;
   flex: 1;
+  /* Inputs don't shrink below their default width otherwise, pushing Create off narrow screens. */
+  min-width: 0;
   padding: 8px 10px;
   border: 1px solid #c9cdd3;
   border-radius: 6px;
+}
+
+/* Keep the error colour visible while focused, where the browser's focus ring would cover it. */
+.create-form input[aria-invalid='true'],
+.create-form input[aria-invalid='true']:focus {
+  border-color: #b4232a;
+  outline: 2px solid #b4232a;
+  outline-offset: -1px;
+}
+
+.char-count.over {
+  color: #8c1c22;
+  font-weight: 600;
+}
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
 }
 
 .char-count {
@@ -68,6 +95,8 @@ button.danger:not(:disabled) {
 }
 
 .status {
+  /* Result messages quote titles; a long run without spaces must wrap, not overflow. */
+  overflow-wrap: anywhere;
   padding: 10px 12px;
   border-radius: 6px;
   background: #fff;
@@ -105,10 +134,21 @@ button.danger:not(:disabled) {
 
 .confirm-dialog-list {
   margin: 0 0 12px;
-  padding-left: 18px;
+  padding-left: 4px;
+  /* Inside, so the bullet isn't clipped by the items' overflow: hidden. */
+  list-style-position: inside;
+}
+
+/* One line per title, ending in "…", so a long title can't widen the dialog. */
+.confirm-dialog-list li {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .confirm-dialog-warning {
+  /* Shortened titles can still be a long run without spaces; let them wrap. */
+  overflow-wrap: anywhere;
   padding: 8px 10px;
   margin-bottom: 10px;
   border: 1px solid #f1d3a6;
@@ -139,8 +179,18 @@ button.danger:not(:disabled) {
   color: #1d5b2f;
 }
 
+.table-scroll {
+  overflow-x: auto;
+  border-radius: 8px;
+}
+
 table.documents {
   width: 100%;
+  /* Below this the table scrolls inside .table-scroll, so the title column keeps ~220px. */
+  min-width: 600px;
+  /* Fixed layout: column widths come from the <colgroup>, not from cell content, so a long
+     title can't push the date and status columns off screen. */
+  table-layout: fixed;
   border-collapse: collapse;
   background: #fff;
   border: 1px solid #e2e5e9;
@@ -159,6 +209,18 @@ table.documents {
 .documents th {
   background: #fafbfc;
   font-weight: 600;
+}
+
+/* Long titles stay on one line and end in "…"; the full title is in the cell's tooltip,
+   and screen readers still read the whole text. */
+.documents .title-cell {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.documents .date-cell {
+  white-space: nowrap;
 }
 
 .documents tr.selected td {

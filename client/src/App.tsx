@@ -3,7 +3,7 @@ import ConfirmDeleteDialog from './ConfirmDeleteDialog';
 import CreateDocumentForm from './CreateDocumentForm';
 import DocumentList from './DocumentList';
 import { ApiError, bulkDeleteDocuments, createDocument, fetchDocuments } from './api';
-import { listTitles, lockedLabel, plural } from './format';
+import { listTitles, lockedLabel, plural, shortTitle } from './format';
 import type { BulkDeleteResult, Doc } from './types';
 
 const GENERIC_ERROR = 'Something went wrong. Please try again.';
@@ -106,7 +106,7 @@ export default function App() {
     setPendingDelete(null);
 
     // Titles come from the list as it was before the delete, so deleted documents can still be named.
-    const titleOf = (id: string) => documents.find((doc) => doc.id === id)?.title ?? id;
+    const titleOf = (id: string) => shortTitle(documents.find((doc) => doc.id === id)?.title ?? id);
 
     setDeleting(true);
     try {
