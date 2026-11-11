@@ -1,4 +1,4 @@
-import type { Doc } from './types';
+import type { BulkDeleteResult, Doc } from './types';
 
 async function request(path: string, init?: RequestInit): Promise<any> {
   const response = await fetch(path, {
@@ -24,7 +24,7 @@ export function createDocument(title: string) {
   });
 }
 
-export function bulkDeleteDocuments(ids: string[]) {
+export function bulkDeleteDocuments(ids: string[]): Promise<BulkDeleteResult> {
   return request('/documents/bulk-delete', {
     method: 'POST',
     body: JSON.stringify({ ids }),

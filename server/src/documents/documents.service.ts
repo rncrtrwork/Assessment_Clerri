@@ -1,21 +1,15 @@
-import { ConflictException, Injectable, NotFoundException, OnModuleInit } from '@nestjs/common';
-import { Document } from './document.model';
+import { ConflictException, Injectable, NotFoundException } from '@nestjs/common';
+import { BulkDeleteResult, Document } from './document.model';
 import { DocumentsStore } from './documents.store';
 
 @Injectable()
-export class DocumentsService implements OnModuleInit {
-  private documentsCache: Document[] = [];
-
+export class DocumentsService {
   constructor(private readonly store: DocumentsStore) {}
 
-  // The list endpoint is hit on every page load and the document set is small,
-  // so we keep a ready-to-serve copy in memory instead of rebuilding it per request.
-  onModuleInit(): void {
-    this.documentsCache = this.store.all();
-  }
-
+  // Read from the store on every request. A startup snapshot used to live here, but it never
+  // saw creates or deletes; the store is in memory and small, so a cache saves nothing.
   async findAll(): Promise<Document[]> {
-    return this.documentsCache;
+    return this.store.all();
   }
 
   async create(title: string): Promise<Document> {
@@ -34,5 +28,29 @@ export class DocumentsService implements OnModuleInit {
     }
 
     this.store.remove(id);
+  }
+
+  /**
+   * Deletes every unlocked document in `ids` and reports the rest, instead of stopping at the
+   * first locked or missing one. Duplicate IDs are collapsed, so the outcome does not depend on
+   * how often or in what order an ID appears.
+   */
+  async bulkDelete(ids: string[]): Promise<BulkDeleteResult> {
+    const result: BulkDeleteResult = { deleted: [], failed: [] };
+
+    for (const id of new Set(ids)) {
+      const document = this.store.findById(id);
+
+      if (!document) {
+        result.failed.push({ id, reason: 'not_found' });
+      } else if (document.lockedBy !== null) {
+        result.failed.push({ id, reason: 'locked', lockedBy: document.lockedBy });
+      } else {
+        this.store.remove(id);
+        result.deleted.push(id);
+      }
+    }
+
+    return result;
   }
 }
