@@ -1,43 +1,22 @@
 import { useCallback, useEffect, useState } from 'react';
+import ConfirmDeleteDialog from './ConfirmDeleteDialog';
 import CreateDocumentForm from './CreateDocumentForm';
 import DocumentList from './DocumentList';
 import { bulkDeleteDocuments, createDocument, fetchDocuments } from './api';
+import { listTitles, lockedLabel, plural } from './format';
 import type { BulkDeleteResult, Doc } from './types';
 
 const GENERIC_ERROR = 'Something went wrong. Please try again.';
-const MAX_TITLES_IN_CONFIRM = 5;
 
 interface Notice {
   kind: 'success' | 'warning';
   text: string;
 }
 
-function plural(count: number, noun: string) {
-  return `${count} ${noun}${count === 1 ? '' : 's'}`;
-}
-
-function listTitles(titles: string[], max = Number.POSITIVE_INFINITY) {
-  if (titles.length <= max) return titles.join(', ');
-  return `${titles.slice(0, max).join(', ')} and ${titles.length - max} more`;
-}
-
-function lockedLabel(title: string, lockedBy: string) {
-  return `${title} (locked by ${lockedBy})`;
-}
-
-function buildConfirmMessage(deletable: Doc[], locked: Doc[]) {
-  const lines = [
-    `Delete ${plural(deletable.length, 'document')}?`,
-    listTitles(deletable.map((doc) => doc.title), MAX_TITLES_IN_CONFIRM),
-  ];
-
-  if (locked.length > 0) {
-    const labels = locked.map((doc) => lockedLabel(doc.title, doc.lockedBy ?? 'unknown'));
-    lines.push('', `${plural(locked.length, 'locked document')} will be skipped: ${listTitles(labels, MAX_TITLES_IN_CONFIRM)}`);
-  }
-
-  lines.push('', 'This cannot be undone.');
-  return lines.join('\n');
+/** The selection split as it was when the user clicked Delete, shown in the confirm dialog. */
+interface PendingDelete {
+  deletable: Doc[];
+  locked: Doc[];
 }
 
 function summarizeResult(result: BulkDeleteResult, titleOf: (id: string) => string): Notice {
@@ -68,6 +47,7 @@ export default function App() {
   const [deleting, setDeleting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [notice, setNotice] = useState<Notice | null>(null);
+  const [pendingDelete, setPendingDelete] = useState<PendingDelete | null>(null);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -95,7 +75,8 @@ export default function App() {
     }
   };
 
-  const handleDeleteSelected = async () => {
+  // Step 1: the Delete button opens the confirm dialog (or explains why there is nothing to delete).
+  const handleDeleteSelected = () => {
     const selectedDocs = documents.filter((doc) => selectedIds.includes(doc.id));
     const locked = selectedDocs.filter((doc) => doc.lockedBy !== null);
     const deletable = selectedDocs.filter((doc) => doc.lockedBy === null);
@@ -109,9 +90,12 @@ export default function App() {
       return;
     }
 
-    if (!window.confirm(buildConfirmMessage(deletable, locked))) {
-      return;
-    }
+    setPendingDelete({ deletable, locked });
+  };
+
+  // Step 2: the user confirmed in the dialog.
+  const handleConfirmDelete = async () => {
+    setPendingDelete(null);
 
     // Titles come from the list as it was before the delete, so deleted documents can still be named.
     const titleOf = (id: string) => documents.find((doc) => doc.id === id)?.title ?? id;
@@ -167,6 +151,14 @@ export default function App() {
           onSelectionChange={setSelectedIds}
         />
       )}
+
+      <ConfirmDeleteDialog
+        open={pendingDelete !== null}
+        deletable={pendingDelete?.deletable ?? []}
+        locked={pendingDelete?.locked ?? []}
+        onConfirm={handleConfirmDelete}
+        onCancel={() => setPendingDelete(null)}
+      />
     </main>
   );
 }
