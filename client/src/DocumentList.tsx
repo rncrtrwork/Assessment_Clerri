@@ -7,7 +7,7 @@ interface DocumentListProps {
 }
 
 function isLocked(doc: Doc) {
-  return doc.locked;
+  return doc.lockedBy !== null;
 }
 
 function formatDate(value: string) {
@@ -56,7 +56,7 @@ export default function DocumentList({ documents, selectedIds, onSelectionChange
             </td>
             <td>{doc.title}</td>
             <td className="muted">{formatDate(doc.updatedAt)}</td>
-            <td>{isLocked(doc) ? <span className="lock">Locked</span> : <span className="muted">—</span>}</td>
+            <td>{isLocked(doc) ? <span className="lock">Locked by {doc.lockedBy}</span> : <span className="muted">—</span>}</td>
           </tr>
         ))}
       </tbody>
