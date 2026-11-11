@@ -1,3 +1,5 @@
+import type { Doc } from './types';
+
 async function request(path: string, init?: RequestInit): Promise<any> {
   const response = await fetch(path, {
     headers: { 'Content-Type': 'application/json' },
@@ -11,7 +13,7 @@ async function request(path: string, init?: RequestInit): Promise<any> {
   return response.json();
 }
 
-export function fetchDocuments() {
+export function fetchDocuments(): Promise<Doc[]> {
   return request('/documents');
 }
 
