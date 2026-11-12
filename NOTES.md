@@ -97,6 +97,13 @@ Each fix was delivered as its own pull request (#1–#5) and merged into `main`.
 ### Accessibility
 - The select-all checkbox has no label, so screen readers announce just "checkbox".
 - The "—" in the Status column has no text alternative (e.g. "Not locked").
+- After a confirmed delete, keyboard focus drops to the page body. The dialog tries to return focus to the Delete button, but that button is disabled while the request runs (and stays disabled if nothing is left selected), so screen-reader users lose their place. 
+  Fix: move focus to the result message (the summary, or the error if the request failed) once the list reloads. Cancel and Esc can keep returning focus to the Delete button.
+
+Two other things the dropped PR also changed:
+
+- The dialog bullet in section 7. On main it still says focus is "returned to the Delete button on close". That's only true for Cancel and Esc, so I would want to change it to "on Cancel or Esc" so it doesn't contradict the new note.
+- The counter text. The closed PR also changed the title counter's " - " to an em dash. NOTES.md quotes the counter as "265 / 200 — 65 characters too long", but the app on main still shows a hyphen. I would either use a hyphen in NOTES.md or leave the small mismatch.
 
 ### Performance and UX
 - `GET /documents` returns every document with no pagination. That's fine for 20, not for thousands.
