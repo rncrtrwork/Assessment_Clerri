@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import ConfirmDeleteDialog from './ConfirmDeleteDialog';
 import CreateDocumentForm from './CreateDocumentForm';
 import DocumentList from './DocumentList';
@@ -53,6 +53,18 @@ export default function App() {
   const [error, setError] = useState<string | null>(null);
   const [notice, setNotice] = useState<Notice | null>(null);
   const [pendingDelete, setPendingDelete] = useState<PendingDelete | null>(null);
+
+  // After a confirmed delete the dialog can't return focus to the Delete button (it is disabled
+  // while the request runs, and often stays disabled), so focus would drop to <body>. Move it to
+  // the message that says what happened instead.
+  const outcomeRef = useRef<HTMLParagraphElement>(null);
+  const [focusOutcome, setFocusOutcome] = useState(false);
+
+  useEffect(() => {
+    if (!focusOutcome) return;
+    outcomeRef.current?.focus();
+    setFocusOutcome(false);
+  }, [focusOutcome]);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -121,6 +133,7 @@ export default function App() {
     } finally {
       setDeleting(false);
       await load();
+      setFocusOutcome(true);
     }
   };
 
@@ -141,12 +154,12 @@ export default function App() {
       <CreateDocumentForm onCreate={handleCreate} />
 
       {error && (
-        <p className="status error" role="alert">
+        <p className="status error" role="alert" tabIndex={-1} ref={outcomeRef}>
           {error}
         </p>
       )}
       {notice && (
-        <p className={`status ${notice.kind}`} role="status">
+        <p className={`status ${notice.kind}`} role="status" tabIndex={-1} ref={error ? undefined : outcomeRef}>
           {notice.text}
         </p>
       )}

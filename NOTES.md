@@ -60,7 +60,8 @@ Each fix was delivered as its own pull request (#1–#5) and merged into `main`.
 - **Problem:** the browser draws that box, so it can't be styled: plain text only, headed "localhost:5173 says", with OK/Cancel buttons. The locked-document warning was easy to miss.
 - **Fix:** a `ConfirmDeleteDialog` built on the native `<dialog>` element (`showModal()`). It provides:
   - a dimmed backdrop and Esc to cancel,
-  - keyboard focus kept inside the dialog, and returned to the Delete button on close,
+  - keyboard focus kept inside the dialog, and returned to the Delete button on Cancel or Esc,
+  - after a confirmed delete, focus moved to the result message. The Delete button is disabled while the request runs, so the browser's default would drop focus to the page body and screen-reader users would lose their place,
   - focus starting on Cancel, so an accidental Enter never deletes anything,
   - a highlighted warning for locked documents.
 

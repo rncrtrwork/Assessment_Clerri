@@ -66,7 +66,7 @@ export default function CreateDocumentForm({ onCreate }: CreateDocumentFormProps
       {showCounter && (
         <div id="new-document-title-count" className={tooLong ? 'char-count over' : 'char-count muted'}>
           {length} / {TITLE_MAX_LENGTH}
-          {tooLong && ` - ${overBy} ${overBy === 1 ? 'character' : 'characters'} too long`}
+          {tooLong && ` — ${overBy} ${overBy === 1 ? 'character' : 'characters'} too long`}
         </div>
       )}
       {/* Announced once when the limit is crossed; the text doesn't change per keystroke, so
